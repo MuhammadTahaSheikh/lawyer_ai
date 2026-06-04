@@ -1,3 +1,21 @@
+# Lawyer AI Frontend
+
+React CMS for Lawyer AI.
+
+**Repository:** https://github.com/MuhammadTahaSheikh/lawyer_ai.git (`origin`)
+
+Optional upstream (original team repo): `upstream` → https://github.com/ymesadev/laywer-ai.git
+
+## Setup
+
+```bash
+npm install
+cp .env.example .env
+npm start
+```
+
+---
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
