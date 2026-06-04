@@ -1,0 +1,89 @@
+.notes-container {
+    padding: 16px;
+   
+  }
+  
+  .note-item {
+    border: 1px solid #ddd;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .note-header {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #f7f7f7;
+    cursor: pointer;
+  }
+  
+  .note-subject {
+    font-weight: bold;
+    margin-right: auto;
+    font-size: 0.9em;
+  }
+  
+  .note-date {
+    margin: 0 10px;
+    font-size: 0.8em;
+    color: #666;
+  }
+  
+  .note-toggle-icon {
+    font-size: 0.8em;
+    color: #333;
+    margin-left: 10px;
+  }
+  
+  .note-content {
+    /* padding: 10px; */
+    background: #fff;
+    width: 100% !important;
+
+  }
+  .note-content p{
+    padding: 10px;
+    font-size: 0.875rem;
+  }
+  
+  /* Responsive font sizes for small and tablet screens */
+  @media (max-width: 960px) {
+    .note-subject {
+      font-size: 0.8em;
+    }
+    
+    .note-date {
+      font-size: 0.75em;
+    }
+    
+    .note-toggle-icon {
+      font-size: 0.75em;
+    }
+    
+    .note-content p {
+      font-size: 0.8125rem;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .note-subject {
+      font-size: 0.75em;
+    }
+    
+    .note-date {
+      font-size: 0.7em;
+    }
+    
+    .note-toggle-icon {
+      font-size: 0.7em;
+    }
+    
+    .note-content p {
+      font-size: 0.75rem;
+    }
+  }
+  .ql-editor {
+    
+    min-height: 200px; /* Ensures a minimum height */
+  }

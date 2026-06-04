@@ -1,0 +1,111 @@
+.prompt-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.messages-container {
+  flex: 1; /* takes up remaining space above the input */
+  overflow-y: auto;
+  padding: 20px;
+  box-sizing: border-box;
+  padding-bottom: 115px;
+  flex-direction: column;
+  display: flex;
+}
+
+/* Messages styling */
+.message {
+  display: inline-block; 
+  max-width: 80%; /* Prevent overly wide messages on large screens */
+  padding: 10px 15px;
+  margin: 8px 0;
+  border-radius: 12px;
+  line-height: 1.4;
+  word-wrap: break-word; /* Ensures text wraps properly */
+  font-size: 15px;
+}
+
+.message.user {
+  align-self: flex-end; 
+  background-color: #ececec;
+  color: #1d1d1d;
+  text-align: left;
+  margin-left: auto; /* Pushes the message bubble to the right */
+  margin-right: 0; /* Ensures it's not centered */
+}
+
+.message.response {
+  align-self: flex-start; 
+
+  color: #333;
+  text-align: left;
+  margin-right: auto; /* Keeps assistant message on the left */
+  margin-left: 0;
+}
+
+/* Input form at the bottom */
+.prompt-form {
+  border-top: 1px solid #e5e5e5;
+  display: flex;
+  align-items: center;
+  padding: 24px 12px;
+  background: #fff;
+  box-sizing: border-box;
+  position: absolute; /* Change from fixed to absolute */
+  bottom: 0;
+  left: 0;
+  width: 100%; /* Make it match the parent container */
+  max-width: 100%; /* Ensure it doesn't overflow */
+}
+.prompt-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 10px;
+  border-radius: 20px;
+  background-color: #fafafa;
+  font-size: 16px;
+  margin-right: 8px;
+  height: 60px;
+}
+
+.prompt-input::placeholder {
+  color: #888;
+}
+
+.prompt-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease-in-out;
+}
+
+.prompt-button:hover {
+  background-color: #f2f2f2;
+}
+
+.download-link {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.reset-icon-container {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  cursor: pointer;
+}
+
+.reset-icon {
+  width: 24px;
+  height: 24px;
+}

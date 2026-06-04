@@ -1,0 +1,72 @@
+.home-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh; /* Take full viewport height */
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevent scroll on the body, let chat area handle scrolling */
+}
+
+/* Left sidebar */
+.previous-chats-container {
+  width: 250px;
+  background: #f2f2f2;
+  border-right: 1px solid #ddd;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Main chat area */
+.main-chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  /* Add padding or centered alignment if you want the intro perfectly centered */
+}
+
+/* Before expansion, we center the intro in the available space */
+.intro-section {
+  flex: 1; /* Take all remaining space */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* Typing heading styling */
+.typing-heading {
+  margin-top: 20px;
+  font-size: 24px;
+  color: #333;
+  text-align: center;
+}
+
+/* The chat-container will host messages & prompt.
+   After expansion, we usually want messages at the top and input at bottom. */
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; /* Input at bottom */
+  align-items: center; 
+  padding: 20px;
+  box-sizing: border-box;
+  overflow-y: auto; /* Scroll messages within this container */
+}
+
+/* Constrain width of chat content to resemble ChatGPT’s centered look */
+.chat-container > .messages-container, 
+.chat-container > .prompt-form {
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .previous-chats-container {
+    display: none;
+  }
+}

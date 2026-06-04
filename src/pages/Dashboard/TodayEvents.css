@@ -1,0 +1,74 @@
+/* Agenda view date column */
+.rbc-agenda-date-cell {
+  background-color: white !important;
+  color: black !important; /* Optional, set color to black or any readable color */
+  font-weight: bold;
+}
+
+/* Agenda view time column */
+.rbc-agenda-time-cell {
+  color: black !important;
+  font-weight: 500;
+}
+@media (max-width: 1685px) {
+  .rbc-agenda-view table.rbc-agenda-table tbody tr {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 12px;
+  }
+
+  .rbc-agenda-view .rbc-agenda-date-cell,
+  .rbc-agenda-view .rbc-agenda-time-cell,
+  .rbc-agenda-view .rbc-agenda-event-cell {
+    display: block;
+    width: 100% !important;
+    text-align: left !important;
+    padding: 8px 12px;
+  }
+
+  .rbc-agenda-view .rbc-agenda-time-cell {
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 8px;
+    font-size: 1rem;
+  }
+
+  .rbc-agenda-view .rbc-agenda-event-cell {
+    margin-top: 8px;
+  }
+
+  .rbc-agenda-view .rbc-agenda-event-cell > div {
+    width: 100%;
+  }
+
+  /* Optional: Better spacing between stacked rows */
+  .rbc-agenda-view table.rbc-agenda-table tbody tr td {
+    border: none;
+  }
+}
+
+/* Additional mobile-specific spacing */
+@media (max-width: 768px) {
+  .rbc-agenda-view table.rbc-agenda-table tbody tr {
+    padding: 20px 0;
+    margin-bottom: 16px;
+  }
+
+  .rbc-agenda-view .rbc-agenda-date-cell,
+  .rbc-agenda-view .rbc-agenda-time-cell,
+  .rbc-agenda-view .rbc-agenda-event-cell {
+    padding: 10px 16px;
+  }
+
+  .rbc-agenda-view .rbc-agenda-time-cell {
+    margin-bottom: 12px;
+    font-size: 1.1rem;
+  }
+
+  .rbc-agenda-view .rbc-agenda-event-cell {
+    margin-top: 12px;
+  }
+}

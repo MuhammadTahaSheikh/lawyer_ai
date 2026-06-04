@@ -1,0 +1,173 @@
+/* Container */
+.cases-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+ 
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Table-like styling using CSS Grid */
+.cases-table {
+  display: grid;
+  gap: 10px;
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgb(0 0 0 / 0%);
+}
+
+.table-header,
+.table-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; /* Adjust column widths */
+  gap: 10px;
+  padding: 10px;
+}
+
+.table-header {
+  background-color: #f9f9f9;
+  color: #000000;
+  font-weight: bold;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  border: solid 1px #dddddd;
+}
+
+.table-row {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.table-row:hover {
+  background-color: #eef7ff;
+}
+
+.table-row div {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  font-size: 13px;
+}
+.cases-container h1{
+  text-align: left;
+}
+
+/* Pagination styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  border: none;
+  background-color: #323334;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pagination button[disabled] {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination span {
+  font-size: 14px;
+  color: #333;
+}
+
+/* Filters Container */
+.filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  background-color: #f9f9f9;
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  gap: 10px;
+}
+
+/* Individual Filter Input Fields */
+.filters input,
+.filters select {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filters input:focus,
+.filters select:focus {
+  border-color: #6c63ff;
+  box-shadow: 0 0 6px rgba(108, 99, 255, 0.5);
+}
+
+/* Search Bar */
+.filters input[type="text"] {
+  flex: 2;
+  min-width: 200px;
+}
+
+/* Dropdown Filters */
+.filters select {
+  flex: 1;
+  min-width: 150px;
+  background-color: white;
+  cursor: pointer;
+}
+
+/* Filter Buttons (Optional) */
+.filters button {
+  background-color: #6c63ff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.filters button:hover {
+  background-color: #554dbb;
+}
+
+
+
+
+@media screen and (max-width: 980px) {
+
+  .table-header, .table-row {
+
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+}
+
+
+@media screen and (max-width: 768px) {
+
+  .table-header, .table-row {
+
+    grid-template-columns: 1fr ;
+}
+}

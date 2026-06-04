@@ -1,0 +1,91 @@
+ .css-1rr4qq7{
+  max-width: 100% !important;
+ }
+ .rbc-time-header{
+z-index: 0 !important;
+ }
+ @media screen and (max-width:1023px) {
+   .css-1rr4qq7{
+  max-width: 100% !important;
+ }
+ }
+/* .calendar-page {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+ 
+  
+  .rbc-calendar {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+  }
+  
+  .rbc-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #ddd;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .rbc-toolbar button {
+    padding: 5px 10px;
+    margin: 0 5px;
+    border: none;
+    background-color: #007bff;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .rbc-toolbar button:hover {
+    background-color: #0056b3;
+  }
+  
+  .rbc-day-bg,
+  .rbc-timeslot-group {
+    border-color: #eee;
+  }
+  
+  .rbc-event {
+    background-color: #007bff;
+    color: white;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  
+  .rbc-event:hover {
+    background-color: #0056b3;
+  }
+  
+  .rbc-month-view {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+  } */
+
+  /* only affect Typography inside react-big-calendar events */
+.calendar-page-root .rbc-event [class*="JoyTypography-root"] {
+  overflow: visible !important;
+}
+
+.rbc-event-label {
+  font-size: 47% !important;
+}
+
+.rbc-day-slot .rbc-event{
+  padding-bottom: 60px !important;
+}
+
+.rbc-timeslot-group {
+ 
+  min-height: 95px !important;
+
+}

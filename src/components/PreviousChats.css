@@ -1,0 +1,57 @@
+.previous-chats-container {
+    width: 300px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #ddd;
+    overflow-y: auto; /* Make the container scrollable */
+    height: 100vh; /* Full height of the viewport */
+  }
+  
+  .previous-chats-container h2 {
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .chat-list {
+    padding: 10px;
+  }
+  
+  .chat-item {
+    padding: 10px;
+    margin-bottom: 5px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Truncate long text */
+    white-space: nowrap;
+  }
+  
+  .chat-item:hover {
+    background-color: #f1f1f1;
+  }
+
+  .chat-item-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .chat-item {
+    flex: 1;
+    cursor: pointer;
+  }
+  
+  .delete-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #938d8d;
+    padding: 0;
+    margin-left: 10px;
+  }
