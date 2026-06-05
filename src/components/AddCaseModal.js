@@ -60,7 +60,7 @@ const AddCaseModal = ({
     if (field === "name" && !value) {
       setErrors((prev) => ({
         ...prev,
-        name: "Name is required:",
+        name: "Name is required please fill this field",
       }));
     } else {
       setErrors((prev) => ({ ...prev, name: "" }));
