@@ -27,6 +27,7 @@ import PortalDashboard from "./pages/Portal/PortalDashboard";
 
 // Auth pages
 import Login from "./components/Login";
+import SetPassword from "./components/SetPassword";
 
 // Dashboard & home
 import HomeTab from "./pages/Dashboard/Home";
@@ -316,6 +317,7 @@ function App() {
           <Router>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/set-password" element={<SetPassword />} />
 
               {/* Client Portal (JWT auth, separate from Firebase) */}
               <Route path="/portal/login" element={<PortalLogin />} />

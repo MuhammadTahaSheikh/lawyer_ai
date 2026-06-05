@@ -72,8 +72,7 @@ const StaffManagement = () => {
     type: "Editor",
     title: "",
     default_hourly_rate: 0,
-    password: "",
-    confirmPassword: "",
+    sendSetupEmail: true,
   });
   const [newUser, setNewUser] = useState(emptyNewUser);
 
@@ -183,36 +182,22 @@ const StaffManagement = () => {
     }
   };
 
-  // Create user with Axios
+  // Create user with Axios — user sets their own password via setup email/link
   const handleCreateUser = async () => {
     if (!newUser.email?.trim() || !newUser.first_name?.trim() || !newUser.last_name?.trim()) {
       setMessage("Email, first name, and last name are required.");
       return;
     }
-    if (!newUser.password) {
-      setMessage("Password is required.");
-      return;
-    }
-    if (newUser.password.length < 6) {
-      setMessage("Password must be at least 6 characters.");
-      return;
-    }
-    if (newUser.password !== newUser.confirmPassword) {
-      setMessage("Password and confirm password do not match.");
-      return;
-    }
+
+    const email = newUser.email.trim();
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        newUser.email.trim(),
-        newUser.password
-      );
+      const userCredential = await createUserWithEmailAndPassword(auth, email);
       const uid = userCredential.user.uid;
 
       const payload = {
         uid: uid,
-        email: newUser.email,
+        email: email,
         first_name: newUser.first_name,
         middle_initial: "",
         last_name: newUser.last_name,
@@ -233,7 +218,39 @@ const StaffManagement = () => {
 
       const response = await api.post("/active_users", payload);
 
-      setMessage("User created successfully. They can sign in with the email and password you set.");
+      let setupMessage =
+        "User created successfully. They must set their own password before signing in.";
+
+      if (newUser.sendSetupEmail) {
+        try {
+          await sendPasswordResetEmail(auth, email);
+          setupMessage = `User created successfully. A password setup email was sent to ${email}.`;
+        } catch (emailError) {
+          try {
+            const link = await fetchAdminRecoveryLink(email);
+            await navigator.clipboard.writeText(link);
+            setupMessage =
+              `User created. Email could not be sent (${authErrorMessage(emailError)}). ` +
+              "A setup link was copied to your clipboard — send it to the user securely.";
+          } catch (linkError) {
+            setupMessage =
+              `User created, but setup email failed (${authErrorMessage(emailError)}). ` +
+              "Use “Copy setup link” on their row to send them a password link.";
+          }
+        }
+      } else {
+        try {
+          const link = await fetchAdminRecoveryLink(email);
+          await navigator.clipboard.writeText(link);
+          setupMessage =
+            "User created successfully. A password setup link was copied to your clipboard — send it to them securely.";
+        } catch (linkError) {
+          setupMessage =
+            "User created successfully. Use “Copy setup link” on their row to let them set a password.";
+        }
+      }
+
+      setMessage(setupMessage);
       setStaff([...staff, response.data]);
       setNewUser(emptyNewUser());
       setOpenModal(false);
@@ -779,26 +796,15 @@ const StaffManagement = () => {
         >
           <ModalClose />
           <Typography level="h5" sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>Create New Staff Entry</Typography>
+          <Typography level="body-sm" sx={{ color: "neutral.600" }}>
+            The new user will set their own password via a setup email or link — you do not choose their password.
+          </Typography>
           <Stack spacing={2}>
             <Input
               placeholder="Email"
               type="email"
               value={newUser.email}
               onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-            />
-            <Input
-              placeholder="Password"
-              type="password"
-              value={newUser.password}
-              onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-            />
-            <Input
-              placeholder="Confirm password"
-              type="password"
-              value={newUser.confirmPassword}
-              onChange={(e) =>
-                setNewUser({ ...newUser, confirmPassword: e.target.value })
-              }
             />
             <Input
               placeholder="First Name"
@@ -829,6 +835,24 @@ const StaffManagement = () => {
               value={newUser.default_hourly_rate}
               onChange={(e) => setNewUser({ ...newUser, default_hourly_rate: parseFloat(e.target.value) || 0 })}
             />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <input
+                type="checkbox"
+                id="sendSetupEmail"
+                checked={newUser.sendSetupEmail}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, sendSetupEmail: e.target.checked })
+                }
+              />
+              <Typography
+                component="label"
+                htmlFor="sendSetupEmail"
+                level="body-sm"
+                sx={{ cursor: "pointer" }}
+              >
+                Send password setup email to user
+              </Typography>
+            </Box>
             <Button onClick={handleCreateUser}>Create Staff</Button>
           </Stack>
         </ModalDialog>

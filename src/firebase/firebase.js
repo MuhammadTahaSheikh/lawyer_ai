@@ -137,14 +137,14 @@ export async function signOut() {
   notifyListeners();
 }
 
-/** Admin: create Supabase Auth user via backend (service role). */
+/** Admin: create Supabase Auth user via backend (service role). Password optional — backend generates one if omitted. */
 export async function createUserWithEmailAndPassword(_auth, email, password) {
   const base = process.env.REACT_APP_BASE_URL || "";
-  const { data } = await axios.post(
-    `${base}/auth/admin/create-user`,
-    { email, password },
-    { headers: { "x-api-key": process.env.REACT_APP_API_TOKEN } }
-  );
+  const body = { email };
+  if (password) body.password = password;
+  const { data } = await axios.post(`${base}/auth/admin/create-user`, body, {
+    headers: { "x-api-key": process.env.REACT_APP_API_TOKEN },
+  });
   return { user: { uid: data.uid, email: data.email } };
 }
 
@@ -156,7 +156,7 @@ export async function sendPasswordResetEmail(_auth, email) {
   }
   const redirectTo =
     process.env.REACT_APP_SUPABASE_RESET_REDIRECT ||
-    `${window.location.origin}/login`;
+    `${window.location.origin}/set-password`;
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo,
   });
