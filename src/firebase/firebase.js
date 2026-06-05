@@ -181,6 +181,16 @@ export async function sendPasswordResetEmail(_auth, email) {
   }
 }
 
+function fixRecoveryLinkRedirect(link, redirectTo) {
+  try {
+    const url = new URL(link);
+    url.searchParams.set("redirect_to", redirectTo);
+    return url.toString();
+  } catch {
+    return link;
+  }
+}
+
 /** Admin: recovery link via service role (does not send email). */
 export async function fetchAdminRecoveryLink(email) {
   const base = process.env.REACT_APP_BASE_URL || "";
@@ -195,7 +205,7 @@ export async function fetchAdminRecoveryLink(email) {
       },
     }
   );
-  return data.link;
+  return fixRecoveryLinkRedirect(data.link, data.redirectTo || redirectTo);
 }
 
 /** No-op: Firebase reCAPTCHA / MFA not used with Supabase email auth. */
