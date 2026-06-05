@@ -184,10 +184,16 @@ export async function sendPasswordResetEmail(_auth, email) {
 /** Admin: recovery link via service role (does not send email). */
 export async function fetchAdminRecoveryLink(email) {
   const base = process.env.REACT_APP_BASE_URL || "";
+  const redirectTo = getPasswordResetRedirect();
   const { data } = await axios.post(
     `${base}/auth/admin/recovery-link`,
-    { email, redirectTo: getPasswordResetRedirect() },
-    { headers: { "x-api-key": process.env.REACT_APP_API_TOKEN } }
+    { email, redirectTo },
+    {
+      headers: {
+        "x-api-key": process.env.REACT_APP_API_TOKEN,
+        "X-Frontend-Origin": window.location.origin,
+      },
+    }
   );
   return data.link;
 }
