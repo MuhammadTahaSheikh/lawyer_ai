@@ -8,6 +8,7 @@ import {
   FormControl,
   FormLabel,
   Alert,
+  CircularProgress,
 } from "@mui/joy";
 import { supabase } from "../firebase/firebase";
 
@@ -23,13 +24,57 @@ export default function SetPassword() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [ready, setReady] = useState(false);
+  const [verifying, setVerifying] = useState(true);
   const [loading, setLoading] = useState(false);
   const nav = useNavigate();
 
   useEffect(() => {
     if (!supabase) {
       setError("Authentication is not configured.");
+      setVerifying(false);
       return;
+    }
+
+    let cancelled = false;
+
+    const finishVerify = (sessionReady, errMsg) => {
+      if (cancelled) return;
+      setVerifying(false);
+      if (errMsg) setError(errMsg);
+      if (sessionReady) {
+        setReady(true);
+        setError("");
+        window.history.replaceState(null, "", window.location.pathname);
+      }
+    };
+
+    const queryParams = new URLSearchParams(window.location.search);
+    const tokenHash = queryParams.get("token_hash");
+    const queryType = queryParams.get("type");
+
+    if (tokenHash && queryType === "recovery") {
+      supabase.auth
+        .verifyOtp({ token_hash: tokenHash, type: "recovery" })
+        .then(({ error: verifyError }) => {
+          if (verifyError) {
+            finishVerify(
+              false,
+              verifyError.message ||
+                "Setup link is invalid or has expired. Ask your administrator for a new link."
+            );
+            return;
+          }
+          finishVerify(true);
+        })
+        .catch((err) => {
+          finishVerify(
+            false,
+            err.message || "Failed to verify setup link."
+          );
+        });
+      return () => {
+        cancelled = true;
+      };
     }
 
     const hashParams = parseHashParams();
@@ -39,32 +84,36 @@ export default function SetPassword() {
       const decoded = decodeURIComponent(description.replace(/\+/g, " "));
       setError(
         code === "otp_expired"
-          ? `${decoded} Request a new setup link from your administrator and open it promptly (links expire after about 1 hour).`
+          ? `${decoded} Request a new setup link from your administrator and open it once (each new link invalidates the previous one).`
           : decoded
       );
+      setVerifying(false);
       window.history.replaceState(null, "", window.location.pathname);
       return;
     }
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || session) {
-        setReady(true);
-        setError("");
+        finishVerify(true);
       }
     });
 
     supabase.auth.getSession().then(({ data, error: sessionError }) => {
       if (sessionError) {
-        setError(sessionError.message);
+        finishVerify(false, sessionError.message);
         return;
       }
       if (data.session) {
-        setReady(true);
-        window.history.replaceState(null, "", window.location.pathname);
+        finishVerify(true);
+      } else {
+        setVerifying(false);
       }
     });
 
-    return () => listener.subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
   const handleSubmit = async (e) => {
@@ -134,9 +183,15 @@ export default function SetPassword() {
         {error && <Alert color="danger" sx={{ mb: 2 }}>{error}</Alert>}
         {success && <Alert color="success" sx={{ mb: 2 }}>{success}</Alert>}
 
-        {!ready && !error && (
+        {verifying && (
+          <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+            <CircularProgress size="sm" />
+          </Box>
+        )}
+
+        {!ready && !error && !verifying && (
           <Alert color="warning" sx={{ mb: 2 }}>
-            Open the setup link from your email to continue. If you already did, wait a moment or request a new link.
+            Open the setup link from your administrator to continue.
           </Alert>
         )}
 
@@ -146,7 +201,7 @@ export default function SetPassword() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            disabled={!ready || loading}
+            disabled={!ready || loading || verifying}
             required
           />
         </FormControl>
@@ -157,7 +212,7 @@ export default function SetPassword() {
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            disabled={!ready || loading}
+            disabled={!ready || loading || verifying}
             required
           />
         </FormControl>
@@ -166,7 +221,7 @@ export default function SetPassword() {
           type="submit"
           fullWidth
           loading={loading}
-          disabled={!ready}
+          disabled={!ready || verifying}
           sx={{ backgroundColor: "#1a2b49", color: "#fff", mb: 1 }}
         >
           Save Password
