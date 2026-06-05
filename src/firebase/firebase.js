@@ -19,10 +19,14 @@ export const supabase = supabaseAnonKey
     })
   : null;
 
+/** Use the site the admin is on (prod vs local), not a build-time localhost env var. */
 export function getPasswordResetRedirect() {
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return `${window.location.origin}/set-password`;
+  }
   return (
     process.env.REACT_APP_SUPABASE_RESET_REDIRECT ||
-    `${window.location.origin}/set-password`
+    "http://localhost:3000/set-password"
   );
 }
 
