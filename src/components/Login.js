@@ -53,6 +53,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const nav = useNavigate();
 
   React.useEffect(() => {
@@ -62,6 +63,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
     try {
       const { user } = await signInWithEmailAndPassword(null, email, password);
 
@@ -103,6 +105,8 @@ export default function Login() {
       } else {
         setError(msg);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,7 +193,12 @@ export default function Login() {
             <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
           </FormControl>
 
-          <Button type="submit" fullWidth sx={{ backgroundColor: "#1a2b49", color: "#fff" }}>
+          <Button
+            type="submit"
+            fullWidth
+            loading={loading}
+            sx={{ backgroundColor: "#1a2b49", color: "#fff" }}
+          >
             Login
           </Button>
         </Box>
