@@ -74,8 +74,7 @@ const CaseStagesComponent = () => {
     try {
       const newStage = { name: newStageName };
       const response = await axios.post('/case_stages', newStage);
-      // Append the new stage and assign its stage_order to the current end of the list
-      const updatedStages = [...stages, { ...response.data, stage_order: stages.length }];
+      const updatedStages = [...stages, response.data];
       setStages(updatedStages);
       setNewStageName('');
       setOpenModal(false);
