@@ -11,6 +11,12 @@ import {
 } from "@mui/joy";
 import { supabase } from "../firebase/firebase";
 
+function parseHashParams() {
+  const hash = window.location.hash.replace(/^#/, "");
+  if (!hash) return null;
+  return new URLSearchParams(hash);
+}
+
 export default function SetPassword() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,14 +32,36 @@ export default function SetPassword() {
       return;
     }
 
+    const hashParams = parseHashParams();
+    if (hashParams?.get("error")) {
+      const code = hashParams.get("error_code");
+      const description = hashParams.get("error_description") || "Link is invalid.";
+      const decoded = decodeURIComponent(description.replace(/\+/g, " "));
+      setError(
+        code === "otp_expired"
+          ? `${decoded} Request a new setup link from your administrator and open it promptly (links expire after about 1 hour).`
+          : decoded
+      );
+      window.history.replaceState(null, "", window.location.pathname);
+      return;
+    }
+
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || session) {
         setReady(true);
+        setError("");
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
+    supabase.auth.getSession().then(({ data, error: sessionError }) => {
+      if (sessionError) {
+        setError(sessionError.message);
+        return;
+      }
+      if (data.session) {
+        setReady(true);
+        window.history.replaceState(null, "", window.location.pathname);
+      }
     });
 
     return () => listener.subscription.unsubscribe();
@@ -62,6 +90,7 @@ export default function SetPassword() {
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) throw updateError;
 
+      await supabase.auth.signOut();
       setSuccess("Password set successfully. You can now sign in.");
       setTimeout(() => nav("/login"), 2000);
     } catch (err) {

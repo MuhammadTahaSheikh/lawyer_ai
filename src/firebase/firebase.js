@@ -10,8 +10,21 @@ const supabaseUrl =
 const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || "";
 
 export const supabase = supabaseAnonKey
-  ? createClient(supabaseUrl, supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        detectSessionInUrl: true,
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    })
   : null;
+
+export function getPasswordResetRedirect() {
+  return (
+    process.env.REACT_APP_SUPABASE_RESET_REDIRECT ||
+    `${window.location.origin}/set-password`
+  );
+}
 
 let _session = null;
 const authListeners = new Set();
@@ -154,11 +167,8 @@ export async function sendPasswordResetEmail(_auth, email) {
       "Supabase is not configured. Set REACT_APP_SUPABASE_ANON_KEY in .env"
     );
   }
-  const redirectTo =
-    process.env.REACT_APP_SUPABASE_RESET_REDIRECT ||
-    `${window.location.origin}/set-password`;
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo,
+    redirectTo: getPasswordResetRedirect(),
   });
   if (error) {
     const err = new Error(error.message);
@@ -172,7 +182,7 @@ export async function fetchAdminRecoveryLink(email) {
   const base = process.env.REACT_APP_BASE_URL || "";
   const { data } = await axios.post(
     `${base}/auth/admin/recovery-link`,
-    { email },
+    { email, redirectTo: getPasswordResetRedirect() },
     { headers: { "x-api-key": process.env.REACT_APP_API_TOKEN } }
   );
   return data.link;

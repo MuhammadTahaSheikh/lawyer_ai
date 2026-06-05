@@ -72,7 +72,7 @@ const StaffManagement = () => {
     type: "Editor",
     title: "",
     default_hourly_rate: 0,
-    sendSetupEmail: true,
+    sendSetupEmail: false,
   });
   const [newUser, setNewUser] = useState(emptyNewUser);
 
@@ -221,33 +221,25 @@ const StaffManagement = () => {
       let setupMessage =
         "User created successfully. They must set their own password before signing in.";
 
-      if (newUser.sendSetupEmail) {
-        try {
-          await sendPasswordResetEmail(auth, email);
-          setupMessage = `User created successfully. A password setup email was sent to ${email}.`;
-        } catch (emailError) {
+      try {
+        await copySetupLinkForEmail(email);
+        setupMessage =
+          "User created successfully. A password setup link was copied to your clipboard — send it to the user securely.";
+
+        if (newUser.sendSetupEmail) {
           try {
-            const link = await fetchAdminRecoveryLink(email);
-            await navigator.clipboard.writeText(link);
-            setupMessage =
-              `User created. Email could not be sent (${authErrorMessage(emailError)}). ` +
-              "A setup link was copied to your clipboard — send it to the user securely.";
-          } catch (linkError) {
-            setupMessage =
-              `User created, but setup email failed (${authErrorMessage(emailError)}). ` +
-              "Use “Copy setup link” on their row to send them a password link.";
+            await sendPasswordResetEmail(auth, email);
+            setupMessage += ` A setup email was also sent to ${email}.`;
+          } catch (emailError) {
+            setupMessage +=
+              emailError.code === "auth/email-rate-limit"
+                ? " (Email not sent — Supabase rate limit; use the copied link instead.)"
+                : ` (Email not sent: ${authErrorMessage(emailError)}.)`;
           }
         }
-      } else {
-        try {
-          const link = await fetchAdminRecoveryLink(email);
-          await navigator.clipboard.writeText(link);
-          setupMessage =
-            "User created successfully. A password setup link was copied to your clipboard — send it to them securely.";
-        } catch (linkError) {
-          setupMessage =
-            "User created successfully. Use “Copy setup link” on their row to let them set a password.";
-        }
+      } catch (linkError) {
+        setupMessage =
+          "User created successfully. Use “Copy setup link” on their row to let them set a password.";
       }
 
       setMessage(setupMessage);
@@ -319,11 +311,29 @@ const StaffManagement = () => {
     }
   };
 
+  const copySetupLinkForEmail = async (email) => {
+    const link = await fetchAdminRecoveryLink(email);
+    await navigator.clipboard.writeText(link);
+    return link;
+  };
+
   const handleResetPassword = async (email) => {
     try {
       await sendPasswordResetEmail(auth, email);
       setMessage("Password reset email sent! Please check your inbox.");
     } catch (error) {
+      const isRateLimit = error.code === "auth/email-rate-limit";
+      if (isRateLimit) {
+        try {
+          await copySetupLinkForEmail(email);
+          setMessage(
+            "Supabase email rate limit reached. A password setup link was copied to your clipboard — send it to the user securely (no email sent)."
+          );
+          return;
+        } catch (linkError) {
+          console.error("Error generating setup link:", linkError);
+        }
+      }
       setMessage(`Error sending reset email: ${authErrorMessage(error)}`);
       console.error("Error sending reset email:", error);
     }
@@ -331,8 +341,7 @@ const StaffManagement = () => {
 
   const handleCopySetupLink = async (email) => {
     try {
-      const link = await fetchAdminRecoveryLink(email);
-      await navigator.clipboard.writeText(link);
+      await copySetupLinkForEmail(email);
       setMessage(
         "Setup link copied to clipboard. Send it to the user securely (no email sent)."
       );
@@ -797,7 +806,8 @@ const StaffManagement = () => {
           <ModalClose />
           <Typography level="h5" sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}>Create New Staff Entry</Typography>
           <Typography level="body-sm" sx={{ color: "neutral.600" }}>
-            The new user will set their own password via a setup email or link — you do not choose their password.
+            The new user sets their own password. A setup link is copied to your clipboard (no Supabase email limit).
+            Optionally send an email too — Supabase limits auth emails to a few per hour.
           </Typography>
           <Stack spacing={2}>
             <Input
@@ -850,7 +860,7 @@ const StaffManagement = () => {
                 level="body-sm"
                 sx={{ cursor: "pointer" }}
               >
-                Send password setup email to user
+                Also send setup email (optional — may hit rate limit)
               </Typography>
             </Box>
             <Button onClick={handleCreateUser}>Create Staff</Button>

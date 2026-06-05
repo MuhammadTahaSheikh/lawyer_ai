@@ -1,3 +1,6 @@
+import { redirectAuthHashToSetPassword } from "./authRedirect";
+redirectAuthHashToSetPassword();
+
 import "./firebase/firebase";   // ← this runs the seeding above
 import React from 'react';
 import ReactDOM from 'react-dom/client';
