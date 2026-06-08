@@ -5,16 +5,16 @@
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "build" }
+    },
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "http://187.124.52.234/$1"
-    },
-    {
-      "src": "/socket.io/(.*)",
-      "dest": "http://187.124.52.234/socket.io/$1"
+      "dest": "/api/[...path]?path=$1"
     },
     {
       "handle": "filesystem"
