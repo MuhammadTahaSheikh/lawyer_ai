@@ -3,6 +3,7 @@
  */
 import { createClient } from "@supabase/supabase-js";
 import axios from "axios";
+import { API_BASE_URL } from "../config/apiBaseUrl";
 
 const supabaseUrl =
   process.env.REACT_APP_SUPABASE_URL ||
@@ -138,7 +139,7 @@ export async function signInWithEmailAndPassword(_auth, email, password) {
   const user = toAuthUser(data.user);
   try {
     await axios.post(
-      `${process.env.REACT_APP_BASE_URL || ""}/auth/link-session`,
+      `${API_BASE_URL}/auth/link-session`,
       { uid: user.uid, email: user.email },
       { headers: { "x-api-key": process.env.REACT_APP_API_TOKEN } }
     );
@@ -156,10 +157,9 @@ export async function signOut() {
 
 /** Admin: create Supabase Auth user via backend (service role). Password optional — backend generates one if omitted. */
 export async function createUserWithEmailAndPassword(_auth, email, password) {
-  const base = process.env.REACT_APP_BASE_URL || "";
   const body = { email };
   if (password) body.password = password;
-  const { data } = await axios.post(`${base}/auth/admin/create-user`, body, {
+  const { data } = await axios.post(`${API_BASE_URL}/auth/admin/create-user`, body, {
     headers: { "x-api-key": process.env.REACT_APP_API_TOKEN },
   });
   return { user: { uid: data.uid, email: data.email } };
@@ -183,10 +183,9 @@ export async function sendPasswordResetEmail(_auth, email) {
 
 /** Admin: recovery link via service role (does not send email). */
 export async function fetchAdminRecoveryLink(email) {
-  const base = process.env.REACT_APP_BASE_URL || "";
   const redirectTo = getPasswordResetRedirect();
   const { data } = await axios.post(
-    `${base}/auth/admin/recovery-link`,
+    `${API_BASE_URL}/auth/admin/recovery-link`,
     { email, redirectTo },
     {
       headers: {
