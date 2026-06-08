@@ -73,9 +73,10 @@ import TicketDashboard from "./components/TicketDashboard";
 import WeeklyHoursGuard from "./components/WeeklyHours";
 import UserActivity from "./components/UserActivity";
 import Retainers from "./pages/Retainers";
+import { API_BASE_URL } from "./config/apiBaseUrl";
 
 /** ─── Axios Global Config ─────────────────────────────────────────────────── */
-axios.defaults.baseURL = process.env.REACT_APP_BASE_URL || "http://localhost:3001";
+axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.headers.common["x-api-key"] = process.env.REACT_APP_API_TOKEN;
 
 axios.interceptors.request.use(
