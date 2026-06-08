@@ -38,9 +38,8 @@ const TEAM_PHOTO_FILES = [
 const allImages = TEAM_PHOTO_FILES.map((file) => `/${file}`);
 
 async function checkUserEnabled(email) {
-  const backendUrl = process.env.REACT_APP_BASE_URL;
   const response = await axios.get(
-    `${backendUrl}/users/by-email/${encodeURIComponent(email)}`,
+    `/users/by-email/${encodeURIComponent(email)}`,
     { headers: { "x-api-key": process.env.REACT_APP_API_TOKEN } }
   );
   if (response.data.disabled && String(response.data.disabled).toLowerCase() === "yes") {

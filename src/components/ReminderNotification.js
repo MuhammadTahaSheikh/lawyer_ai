@@ -4,7 +4,7 @@ import { Close as CloseIcon, Notifications as NotificationsIcon } from "@mui/ico
 import axios from "axios";
 import { auth } from "../firebase/firebase";
 
-const API_URL = `${process.env.REACT_APP_BASE_URL}/tasks`;
+const API_URL = "/tasks";
 
 export default function ReminderNotification() {
   const theme = useTheme();

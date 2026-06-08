@@ -35,7 +35,6 @@ const [deleteLoading, setDeleteLoading] = useState(false);
   const navigate = useNavigate();
     const currentUser = auth.currentUser?.uid;
   
-  const API_BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001";
   const limit = 20;
 
   const formatDate = (dateString) => {
@@ -50,7 +49,7 @@ const [deleteLoading, setDeleteLoading] = useState(false);
   const fetchClients = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/clients`, {
+      const response = await axios.get("/clients", {
         params: {
           page: currentPage,
           search: filters.search,
@@ -76,7 +75,7 @@ const [deleteLoading, setDeleteLoading] = useState(false);
     try {
       setDeleteLoading(true);
       setDeleteId(clientId);
-      await axios.delete(`${API_BASE_URL}/clients/${clientId}`);
+      await axios.delete(`/clients/${clientId}`);
       // Refresh the client list after successful deletion
       fetchClients();
     } catch (error) {
@@ -91,7 +90,7 @@ const [deleteLoading, setDeleteLoading] = useState(false);
     e.stopPropagation();
     try {
       setEditLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/clients/${clientId}`);
+      const response = await axios.get(`/clients/${clientId}`);
       setEditContact(response.data);
       setOpenModal(true);
     } catch (error) {

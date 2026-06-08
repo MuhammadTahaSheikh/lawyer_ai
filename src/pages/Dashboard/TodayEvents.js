@@ -101,11 +101,11 @@ useEffect(() => {
       const start = moment().startOf("day").toISOString();
       const end = moment().endOf("day").toISOString();
   
-      const eventResponse = await axios.get(`${process.env.REACT_APP_BASE_URL}/events`, {
+      const eventResponse = await axios.get("/events", {
         params: { start, end,uid: auth?.currentUser?.uid},
       });
   
-      const eventTypeResponse = await axios.get(`${process.env.REACT_APP_BASE_URL}/event-types`);
+      const eventTypeResponse = await axios.get("/event-types");
   
       const eventsData = eventResponse.data;
       const eventTypesData = eventTypeResponse.data;
@@ -163,7 +163,7 @@ useEffect(() => {
     try {
       const currentUser = auth.currentUser?.uid;
 
-      await axios.put(`${process.env.REACT_APP_BASE_URL}/events/${updatedEvent.id}`, updatedEvent, {
+      await axios.put(`/events/${updatedEvent.id}`, updatedEvent, {
         headers: {
           "Content-Type": "application/json",
           'x-user-uid': currentUser  
@@ -195,7 +195,7 @@ useEffect(() => {
       try {
               const currentUser = auth.currentUser?.uid;
 
-        await axios.delete(`${process.env.REACT_APP_BASE_URL}/events/${eventId}`, {
+        await axios.delete(`/events/${eventId}`, {
   headers: {
     'x-user-uid': currentUser,
   },

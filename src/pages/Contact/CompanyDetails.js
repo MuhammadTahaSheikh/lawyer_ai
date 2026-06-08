@@ -728,7 +728,7 @@ const CompanyDetails = () => {
         const settled = await Promise.allSettled(
           caseIds.map((caseId) =>
             axios
-              .get(`${process.env.REACT_APP_BASE_URL}/tasks/by-case/${caseId}`, {
+              .get(`/tasks/by-case/${caseId}`, {
                 params: { page: 1, limit, sort: "due_date ASC" },
               })
               .then((res) => ({ caseId, data: res.data }))
@@ -857,7 +857,7 @@ const CompanyDetails = () => {
         caseIdsToLoad.map((caseId) => {
           const meta = tasksPagination[caseId] || {};
           return axios
-            .get(`${process.env.REACT_APP_BASE_URL}/tasks/by-case/${caseId}`, {
+            .get(`/tasks/by-case/${caseId}`, {
               params: {
                 page: meta.nextPage || 1,
                 limit,

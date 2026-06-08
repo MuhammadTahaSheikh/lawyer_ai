@@ -3,7 +3,6 @@
  */
 import { createClient } from "@supabase/supabase-js";
 import axios from "axios";
-import { API_BASE_URL } from "../config/apiBaseUrl";
 
 const supabaseUrl =
   process.env.REACT_APP_SUPABASE_URL ||
@@ -139,7 +138,7 @@ export async function signInWithEmailAndPassword(_auth, email, password) {
   const user = toAuthUser(data.user);
   try {
     await axios.post(
-      `${API_BASE_URL}/auth/link-session`,
+      "/auth/link-session",
       { uid: user.uid, email: user.email },
       { headers: { "x-api-key": process.env.REACT_APP_API_TOKEN } }
     );
@@ -159,7 +158,7 @@ export async function signOut() {
 export async function createUserWithEmailAndPassword(_auth, email, password) {
   const body = { email };
   if (password) body.password = password;
-  const { data } = await axios.post(`${API_BASE_URL}/auth/admin/create-user`, body, {
+  const { data } = await axios.post("/auth/admin/create-user", body, {
     headers: { "x-api-key": process.env.REACT_APP_API_TOKEN },
   });
   return { user: { uid: data.uid, email: data.email } };
@@ -185,7 +184,7 @@ export async function sendPasswordResetEmail(_auth, email) {
 export async function fetchAdminRecoveryLink(email) {
   const redirectTo = getPasswordResetRedirect();
   const { data } = await axios.post(
-    `${API_BASE_URL}/auth/admin/recovery-link`,
+    "/auth/admin/recovery-link",
     { email, redirectTo },
     {
       headers: {

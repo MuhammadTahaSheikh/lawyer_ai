@@ -225,7 +225,6 @@ const Cases = ({ navigateToTab, initialPracticeAreaFilter, clearFilter  }) => {
   });
   const [openCaseModal, setOpenCaseModal] = useState(false);
   const navigate = useNavigate();
-  const API_BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001";
 
   const parseDate = (dateString) => {
     if (!dateString || !dateString.includes("/")) return null;
@@ -308,7 +307,7 @@ const Cases = ({ navigateToTab, initialPracticeAreaFilter, clearFilter  }) => {
       const searchParam = (filters.search || '').trim();
       if (searchParam) params.search = searchParam;
 
-      const response = await axios.get(`${API_BASE_URL}/cases`, { params });
+      const response = await axios.get("/cases", { params });
       const formattedCases = response.data.cases.map((item) => ({
         ...item,
         parsedDate: parseDate(item.opened_date),

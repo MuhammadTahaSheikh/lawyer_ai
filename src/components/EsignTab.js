@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { DocusealBuilder } from "@docuseal/react";
 import axios from "axios";
+import { apiUrl } from "../config/apiBaseUrl";
 import {
   Box,
   Button,
@@ -17,8 +18,6 @@ import {
 export default function EsignTab({ caseId: propCaseId, clientEmail }) {
   const { id: paramId } = useParams();
   const caseId = propCaseId || paramId;
-  const API    = process.env.REACT_APP_BASE_URL;
-
   const [token, setToken]       = useState(null);
   const [loadingToken, setLoadingToken] = useState(true);
   const [templateId, setTemplateId]     = useState(null);
@@ -29,11 +28,11 @@ export default function EsignTab({ caseId: propCaseId, clientEmail }) {
 
   // ── 1) get builder token (includes caseId metadata)
   useEffect(() => {
-    axios.post(`${API}/api/docuseal/builder_token`, { case_id: caseId })
+    axios.post("/api/docuseal/builder_token", { case_id: caseId })
       .then(r => setToken(r.data.token))
       .catch(e => setError("Couldn’t load e-sign builder"))
       .finally(() => setLoadingToken(false));
-  }, [API, caseId]);
+  }, [caseId]);
 
   // ── when user finishes uploading in builder, grab the template_id
   const onTemplateCreate = ({ template_id }) => {
@@ -45,9 +44,9 @@ export default function EsignTab({ caseId: propCaseId, clientEmail }) {
     setSending(true);
     try {
       // **you must have already uploaded your PDF** to case-documents and know its URL
-      const document_url = `${API}/case-documents/${caseId}/my-uploaded-file.pdf`;
+      const document_url = apiUrl(`/case-documents/${caseId}/my-uploaded-file.pdf`);
       await axios.post(
-        `${API}/api/docuseal/submission`,
+        "/api/docuseal/submission",
         { case_id: caseId, document_url, email: clientEmail },
         { headers: { "Content-Type": "application/json" } }
       );
@@ -63,7 +62,7 @@ export default function EsignTab({ caseId: propCaseId, clientEmail }) {
 
   // ── 3) Poll signature status
   const fetchSigned = () => {
-    axios.get(`${API}/api/cases/${caseId}/esign/status`)
+    axios.get(`/api/cases/${caseId}/esign/status`)
       .then(r => setSignedDocs(r.data.documents))
       .catch(e => setError("Status fetch failed"));
   };

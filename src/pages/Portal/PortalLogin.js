@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Box, Typography, Button, Input, FormControl, FormLabel, Alert } from "@mui/joy";
 import { usePortalAuth } from "../../context/PortalAuthContext";
+import { apiUrl } from "../../config/apiBaseUrl";
 
 export default function PortalLogin() {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ export default function PortalLogin() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/portal/auth/login`, {
+      const res = await fetch(apiUrl("/portal/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),

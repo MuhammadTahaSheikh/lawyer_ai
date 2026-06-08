@@ -47,8 +47,6 @@ function Company({ from } = {}) {
   const [archiveLoading, setArchiveLoading] = useState(false);
   const [archiveId, setArchiveId] = useState(null);
   const limit = 20;
-  const API_BASE_URL =
-    process.env.REACT_APP_BASE_URL || "http://localhost:3001";
 
   useEffect(() => {
     fetchAllCompanies();
@@ -82,7 +80,7 @@ function Company({ from } = {}) {
     try {
       setDeleteLoading(true);
       setDeleteId(companyId);
-      await axios.delete(`${API_BASE_URL}/companies/${companyId}`);
+      await axios.delete(`/companies/${companyId}`);
       fetchAllCompanies();
     } catch (error) {
       console.error("Error deleting company:", error);
@@ -103,7 +101,7 @@ function Company({ from } = {}) {
     try {
       setArchiveLoading(true);
       setArchiveId(company.id);
-      await axios.put(`${API_BASE_URL}/companies/${company.id}`, {
+      await axios.put(`/companies/${company.id}`, {
         ...company,
         archived: isArchived ? 0 : 1,
       });
@@ -125,7 +123,7 @@ function Company({ from } = {}) {
   const fetchAllCompanies = async () => {
     try {
       setLoading(true);
-      const firstRes = await axios.get(`${API_BASE_URL}/companies?page=1`);
+      const firstRes = await axios.get("/companies?page=1");
       const total = firstRes.data.total;
       const totalPages = Math.ceil(total / 20);
       let all = [...firstRes.data.companies];
@@ -133,7 +131,7 @@ function Company({ from } = {}) {
       if (totalPages > 1) {
         const requests = [];
         for (let p = 2; p <= totalPages; p++) {
-          requests.push(axios.get(`${API_BASE_URL}/companies?page=${p}`));
+          requests.push(axios.get(`/companies?page=${p}`));
         }
         const responses = await Promise.all(requests);
         responses.forEach((res) => {

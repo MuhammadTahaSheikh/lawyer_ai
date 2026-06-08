@@ -176,8 +176,8 @@ export default function SubmitTicketForm() {
     setLoadingContact(true);
     try {
       const headers = getApiHeaders();
-      const baseUrl = process.env.REACT_APP_BASE_URL || "";
-      const { data } = await axios.get(`${baseUrl}/users/${uid}`, { headers });
+      
+      const { data } = await axios.get(`/users/${uid}`, { headers });
 
       const name = [data.first_name, data.last_name].filter(Boolean).join(" ").trim();
       const email = (data.email || "").trim();
@@ -216,10 +216,10 @@ export default function SubmitTicketForm() {
 
   useEffect(() => {
     const headers = getApiHeaders();
-    axios.get(`${process.env.REACT_APP_BASE_URL || ""}/tickets/templates`, { headers }).then((r) => {
+    axios.get(`/tickets/templates`, { headers }).then((r) => {
       setFormTemplates(r.data?.templates || []);
     }).catch(() => {});
-    axios.get(`${process.env.REACT_APP_BASE_URL || ""}/tickets/groups`, { headers }).then((r) => {
+    axios.get(`/tickets/groups`, { headers }).then((r) => {
       setSupportGroups(r.data?.groups || []);
     }).catch(() => {});
   }, [getApiHeaders]);
@@ -228,8 +228,8 @@ export default function SubmitTicketForm() {
     const fetchActiveUsers = async () => {
       try {
         const apiKey = process.env.REACT_APP_API_KEY;
-        const baseUrl = process.env.REACT_APP_BASE_URL || "";
-        const response = await axios.get(`${baseUrl}/active_users`, {
+        
+        const response = await axios.get(`/active_users`, {
           headers: {
             ...(apiKey
               ? { "x-api-key": apiKey, Authorization: `Bearer ${apiKey}` }
@@ -262,12 +262,12 @@ export default function SubmitTicketForm() {
 
       const apiKey =
         process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_TOKEN;
-      const baseUrl = process.env.REACT_APP_BASE_URL || "";
+      
       const params = {};
       if (appliedAssignDateFrom) params.fromDate = appliedAssignDateFrom;
       if (appliedAssignDateTo) params.toDate = appliedAssignDateTo;
 
-      const response = await axios.get(`${baseUrl}/tickets/created`, {
+      const response = await axios.get(`/tickets/created`, {
         params,
         headers: {
           "x-user-uid": uid,
@@ -335,9 +335,9 @@ export default function SubmitTicketForm() {
 
       const apiKey =
         process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_TOKEN;
-      const baseUrl = process.env.REACT_APP_BASE_URL || "";
+      
 
-      const response = await axios.get(`${baseUrl}/tickets/created/resolved/count`, {
+      const response = await axios.get(`/tickets/created/resolved/count`, {
         headers: {
           "x-user-uid": uid,
           ...(apiKey
@@ -362,8 +362,8 @@ export default function SubmitTicketForm() {
     }
     try {
       const headers = getApiHeaders();
-      const baseUrl = process.env.REACT_APP_BASE_URL || "";
-      const { data } = await axios.get(`${baseUrl}/tickets/assigned/attention`, { headers });
+      
+      const { data } = await axios.get(`/tickets/assigned/attention`, { headers });
       setAssignedAttentionCount(Number(data?.count ?? 0));
       const ids = (data?.commentTicketIds || []).map(Number).filter(Boolean);
       setCommentHighlightIds(new Set(ids));
@@ -382,8 +382,8 @@ export default function SubmitTicketForm() {
     }
     try {
       const headers = getApiHeaders();
-      const baseUrl = process.env.REACT_APP_BASE_URL || "";
-      const { data } = await axios.get(`${baseUrl}/tickets/created/attention`, { headers });
+      
+      const { data } = await axios.get(`/tickets/created/attention`, { headers });
       const ids = (data?.commentTicketIds || []).map(Number).filter(Boolean);
       setMyTicketsCommentCount(Number(data?.count ?? ids.length));
       setMyTicketsCommentHighlightIds(new Set(ids));
@@ -403,9 +403,9 @@ export default function SubmitTicketForm() {
       if (!uid) return;
       try {
         const headers = getApiHeaders();
-        const baseUrl = process.env.REACT_APP_BASE_URL || "";
+        
         await axios.post(
-          `${baseUrl}/tickets/assigned/attention/view`,
+          `/tickets/assigned/attention/view`,
           ticketId ? { ticketId } : {},
           { headers }
         );
@@ -426,9 +426,9 @@ export default function SubmitTicketForm() {
       if (!uid || !ticketId) return;
       try {
         const headers = getApiHeaders();
-        const baseUrl = process.env.REACT_APP_BASE_URL || "";
+        
         await axios.post(
-          `${baseUrl}/tickets/created/attention/view`,
+          `/tickets/created/attention/view`,
           { ticketId },
           { headers }
         );
@@ -526,10 +526,10 @@ export default function SubmitTicketForm() {
       setCompletingTicketId(ticketId);
       const apiKey =
         process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_TOKEN;
-      const baseUrl = process.env.REACT_APP_BASE_URL || "";
+      
 
       await axios.put(
-        `${baseUrl}/tickets/${ticketId}/complete`,
+        `/tickets/${ticketId}/complete`,
         {},
         {
           headers: {
@@ -828,7 +828,7 @@ export default function SubmitTicketForm() {
 
       const apiKey = process.env.REACT_APP_API_KEY;
       const response = await fetch(
-        `${process.env.REACT_APP_BASE_URL || ""}/tickets`,
+        `/tickets`,
         {
           method: "POST",
           headers: {

@@ -21,7 +21,6 @@ import {
 import { auth } from "../firebase/firebase";
 
 const AddContactModal = ({ open, onClose, onContactAdded,editContact  }) => {
-  const API_BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001";
   const initialContactState = {
     first_name: "",
     middle_name: "",
@@ -89,14 +88,14 @@ useEffect(() => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
-      const response = await axios.get(`${API_BASE_URL}/companies/names`);
+      const response = await axios.get("/companies/names");
         setCompanyOptions(response.data || []);
       } catch (error) {
         console.error("Failed to fetch companies:", error);
       }
     };
     if (open) fetchCompanies();
-  }, [open, API_BASE_URL]);
+  }, [open]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -139,9 +138,9 @@ useEffect(() => {
 
  try {
     if (editContact?.id) {
-      await axios.put(`${API_BASE_URL}/clients/${editContact.id}`, payload); // Update
+      await axios.put(`/clients/${editContact.id}`, payload); // Update
     } else {
-      await axios.post(`${API_BASE_URL}/clients`, payload); // Create
+      await axios.post("/clients", payload); // Create
     }
     onContactAdded?.();
     onClose();

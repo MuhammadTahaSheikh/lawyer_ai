@@ -24,8 +24,6 @@ const ContactReport = () => {
   const [totalContact,SetTotalContact]=useState(null)
   const navigate = useNavigate();
 
-  const API_BASE_URL =
-    process.env.REACT_APP_BASE_URL || "http://localhost:3001";
   const limit = 20;
 
   const formatDate = (dateString) => {
@@ -40,7 +38,7 @@ const ContactReport = () => {
   const fetchContacts = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/contacts`, {
+      const response = await axios.get("/contacts", {
         params: {
           page: currentPage,
           search: filters.search,

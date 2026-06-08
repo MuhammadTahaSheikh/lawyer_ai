@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Box, Typography, Button, Input, FormControl, FormLabel, Alert } from "@mui/joy";
+import { apiUrl } from "../../config/apiBaseUrl";
 
 export default function PortalRegister() {
   const [form, setForm] = useState({ email: "", password: "", first_name: "", last_name: "" });
@@ -15,7 +16,7 @@ export default function PortalRegister() {
     setError("");
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/portal/auth/register`, {
+      const res = await fetch(apiUrl("/portal/auth/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),

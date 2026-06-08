@@ -384,9 +384,9 @@ export default function MyAssignedTickets({
       const apiKey =
         process.env.REACT_APP_API_KEY || process.env.REACT_APP_API_TOKEN;
 
-      const baseUrl = process.env.REACT_APP_BASE_URL || "";
+      
       await axios.put(
-        `${baseUrl}/tickets/${ticket.id}/status`,
+        `/tickets/${ticket.id}/status`,
         { status: ticket.status },
         {
           headers: {

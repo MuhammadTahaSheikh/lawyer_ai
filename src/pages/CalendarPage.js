@@ -289,8 +289,8 @@ const CalendarPage = () => {
       const start = moment(date).subtract(1, 'month').startOf("month").toISOString();
       const end = moment(date).add(1, 'month').endOf("month").toISOString();
       const [eventRes, typeRes] = await Promise.all([
-        axios.get(`${process.env.REACT_APP_BASE_URL}/events`, { params: { start, end,uid:auth.currentUser?.uid } }),
-        axios.get(`${process.env.REACT_APP_BASE_URL}/event-types`),
+        axios.get("/events", { params: { start, end,uid:auth.currentUser?.uid } }),
+        axios.get("/event-types"),
       ]);
 
       const typeMap = typeRes.data.reduce((acc, t) => {
@@ -355,7 +355,7 @@ const formatted = eventRes.data.map(ev => {
   useEffect(() => {
     if (!selectedEvent) return;
     axios
-      .get(`${process.env.REACT_APP_BASE_URL}/events/logs1`, {
+      .get("/events/logs1", {
         params: { eventId: selectedEvent.id },
       })
       .then(res => setLogs(res.data))
@@ -393,7 +393,7 @@ const formatted = eventRes.data.map(ev => {
     try {
       const uid = auth.currentUser?.uid;
       await axios.put(
-        `${process.env.REACT_APP_BASE_URL}/events/${updated.id}`,
+        `/events/${updated.id}`,
         updated,
         { headers: { "Content-Type": "application/json", "x-user-uid": uid } }
       );
@@ -416,7 +416,7 @@ const formatted = eventRes.data.map(ev => {
 
     try {
             const uid = auth.currentUser?.uid;
-      await axios.delete(`${process.env.REACT_APP_BASE_URL}/events/${id}`, {
+      await axios.delete(`/events/${id}`, {
   headers: {
     'x-user-uid': uid,
   },

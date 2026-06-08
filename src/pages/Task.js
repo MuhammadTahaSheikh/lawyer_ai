@@ -39,7 +39,7 @@ import { useColorScheme } from "@mui/joy/styles";
 import TaskModal from "../components/taskModal";
 import { auth } from "../firebase/firebase";
 
-const API_URL = `${process.env.REACT_APP_BASE_URL}/tasks`;
+const API_URL = "/tasks";
 
 export default function TasksDashboard() {
   const [tasks, setTasks] = useState({});

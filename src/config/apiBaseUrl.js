@@ -39,3 +39,15 @@ function resolveApiBaseUrl() {
 }
 
 export const API_BASE_URL = resolveApiBaseUrl();
+
+/** Axios paths — baseURL is already set in App.js; do not prepend API_BASE_URL again. */
+export function apiPath(path) {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return p;
+}
+
+/** Full path for fetch() or window.open (no axios baseURL). */
+export function apiUrl(path) {
+  const base = API_BASE_URL.replace(/\/$/, "");
+  return `${base}${apiPath(path)}`;
+}

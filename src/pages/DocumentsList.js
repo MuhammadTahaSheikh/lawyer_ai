@@ -54,7 +54,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import TemplateList from "./TemplateList";
 import ShortCodes from "../components/ShortCodes";
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001";
+import { API_BASE_URL } from "../config/apiBaseUrl";
 
 const DocumentDetailsModal = ({ doc, open, onClose }) => {
   return (
@@ -269,7 +269,7 @@ const DocumentsList = () => {
       params.search = searchTerm.trim();
     }
    
-    const res = await axios.get(`${API_BASE_URL}/documents`, { params });
+    const res = await axios.get(`/documents`, { params });
     setDocuments(res.data.documents);
     setTotalDocs(res.data.totalDocuments);
 
@@ -278,7 +278,7 @@ const DocumentsList = () => {
       new Set(res.data.documents.map(doc => String(doc.caseId || doc.case_id)))
     );
     if (uniqueIds.length > 0) {
-      const mappingRes = await axios.get(`${API_BASE_URL}/cases/mapping`, {
+      const mappingRes = await axios.get(`/cases/mapping`, {
   params: { ids: uniqueIds.join(",") },
   headers: {
     'x-user-uid': auth.currentUser?.uid,

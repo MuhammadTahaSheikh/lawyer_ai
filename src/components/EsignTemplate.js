@@ -9,7 +9,6 @@ import {
 import DescriptionIcon from '@mui/icons-material/Description';
 
 function EsignTemplate({case_id}) {
-  const API_BASE_URL = process.env.REACT_APP_BASE_URL || 'http://localhost:3001';
   const [allTemplates, setAllTemplates] = useState([]);
 
   useEffect(() => {
@@ -28,7 +27,7 @@ function EsignTemplate({case_id}) {
 
   const handleTemplateSelect = (templateName) => {
     axios({
-      url: `${API_BASE_URL}/generate-documentESIGN`,
+      url: "/generate-documentESIGN",
       method: 'POST',
       responseType: 'blob',
       data: { template_filename: templateName ,case_id},

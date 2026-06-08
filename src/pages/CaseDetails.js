@@ -5,6 +5,7 @@ import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { API_BASE_URL, apiUrl } from "../config/apiBaseUrl";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -95,7 +96,7 @@ async function openOnlyOfficeEditor({
 
   const REACT_APP_API_TOKEN1 = process.env.REACT_APP_API_TOKEN || "LSzuRrbln9oyKUz05E9bgQe1tBNtZLft";
   
-  const tokenResp = await fetch(`${API_BASE_URL}/wopi/token`, {
+  const tokenResp = await fetch(apiUrl("/wopi/token"), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -126,7 +127,7 @@ async function openOnlyOfficeEditor({
   const tokenData = await tokenResp.json();
   const { access_token, access_token_ttl, wopi_src } = tokenData;
 
-  const discResp = await fetch(`${API_BASE_URL}/wopi/discovery`, {
+  const discResp = await fetch(apiUrl("/wopi/discovery"), {
     headers: {
       'x-api-key': REACT_APP_API_TOKEN1,
     },
@@ -255,7 +256,6 @@ async function openOnlyOfficeEditor({
   }, 500);
 }
 
-const API_BASE_URL = process.env.REACT_APP_BASE_URL || "http://localhost:3001";
 // ============ ADD THIS HEARTBEAT HOOK HERE ============
 // window.open('', name) reuses a named window; if none exists it opens about:blank — a blank tab.
 // After the user closes OnlyOffice, the heartbeat would otherwise open a new blank tab every 50s.
@@ -694,7 +694,7 @@ const eventId = selectedEvent?.id;
 const fetchUserName = async (uid) => {
   if (!uid || userNames[uid]) return; // skip if already cached
   try {
-    const res = await axios.get(`${API_BASE_URL}/users/${uid}`);
+    const res = await axios.get(`/users/${uid}`);
     if (res.data?.first_name || res.data?.last_name) {
       setUserNames((prev) => ({
         ...prev,
@@ -725,7 +725,7 @@ const handleRename = async () => {
         finalNewName = `${finalNewName}.${fileExtension}`;
       }
 
-      await axios.put(`${API_BASE_URL}/cases/${caseId}/documents/rename`, {
+      await axios.put(`/cases/${caseId}/documents/rename`, {
         oldName: renameState.currentName,
         newName: finalNewName,
         folder: renameState.folder || "",
@@ -751,7 +751,7 @@ setDocuments(prevDocs =>
       );
 
     } else {
-      await axios.put(`${API_BASE_URL}/cases/${caseId}/folders/rename`, {
+      await axios.put(`/cases/${caseId}/folders/rename`, {
         oldName: renameState.currentName,
         newName: renameState.newName,
       });
@@ -759,7 +759,7 @@ setDocuments(prevDocs =>
 
     setRenameState({ open: false, currentName: "", newName: "", folder: "", type: "" });
     fetchCaseDocuments();
-    const { data } = await axios.get(`${API_BASE_URL}/cases/${caseId}/folders`);
+    const { data } = await axios.get(`/cases/${caseId}/folders`);
     setFolders(data.folders);
   } catch (err) {
     console.error("Rename failed:", err);
@@ -790,7 +790,7 @@ useEffect(() => {
       const currentUser = auth.currentUser?.uid;
       console.log("Updating event payload:", updatedEvent);
 
-      await axios.put(`${process.env.REACT_APP_BASE_URL}/events/${updatedEvent.id}`, updatedEvent, {
+      await axios.put(`/events/${updatedEvent.id}`, updatedEvent, {
         headers: {
           "Content-Type": "application/json",
           'x-user-uid': currentUser  
@@ -823,7 +823,7 @@ useEffect(() => {
   }
         try {
                   const currentUser = auth.currentUser?.uid;
-          await axios.delete(`${process.env.REACT_APP_BASE_URL}/events/${eventId}`, {
+          await axios.delete(`/events/${eventId}`, {
       headers: {
         'x-user-uid': currentUser,
       },
@@ -867,10 +867,10 @@ const handleDeleteFolder = async (folderName) => {
   if (!window.confirm(`Are you sure you want to delete the folder "${folderName}"?`)) return;
 
   try {
-    await axios.delete(`${API_BASE_URL}/cases/${caseId}/folders/${encodeURIComponent(folderName)}`);
+    await axios.delete(`/cases/${caseId}/folders/${encodeURIComponent(folderName)}`);
     alert("Folder deleted.");
     fetchCaseDocuments();
-    const { data } = await axios.get(`${API_BASE_URL}/cases/${caseId}/folders`);
+    const { data } = await axios.get(`/cases/${caseId}/folders`);
     setFolders(data.folders);
   } catch (err) {
     console.error("Error deleting folder:", err);
@@ -973,7 +973,7 @@ const EventsId = () => {
    setIsGenerating(true);
 setErrorMessage(''); 
     axios({
-      url: `${API_BASE_URL}/generate-document`,
+      url: `/generate-document`,
       method: "POST",
       responseType: "blob",
       data: { case_id: caseId,
@@ -1060,7 +1060,7 @@ setErrorMessage('');
     if (!caseId || !documentsTabVisited) return;
     const fetchFolders = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/cases/${caseId}/folders`);
+        const res = await axios.get(`/cases/${caseId}/folders`);
         setFolders(res.data.folders);
       } catch (err) {
         console.error("Error loading folders:", err);
@@ -1078,7 +1078,7 @@ setErrorMessage('');
 
   try {
     await axios.post(
-      `${API_BASE_URL}/cases/${caseId}/folders`,
+      `/cases/${caseId}/folders`,
       { name: fullPath },
       { headers: { "x-user-uid": auth.currentUser.uid } }
     );
@@ -1087,7 +1087,7 @@ setErrorMessage('');
     setAddFolderOpen(false);
 
     // Refresh folders
-    const { data } = await axios.get(`${API_BASE_URL}/cases/${caseId}/folders`);
+    const { data } = await axios.get(`/cases/${caseId}/folders`);
     setFolders(data.folders);
     fetchCaseDocuments();
   } catch (err) {
@@ -1137,7 +1137,7 @@ setErrorMessage('');
     try {
       // Perform move via backend
       await axios.put(
-        `${API_BASE_URL}/cases/${caseId}/documents/${encodeURIComponent(draggableId)}/move`,
+        `/cases/${caseId}/documents/${encodeURIComponent(draggableId)}/move`,
         {
           folder: targetFolder,  // empty string for Uncategorized
           currentFolder: currentFolder, // already an empty string for Uncategorized
@@ -1148,10 +1148,10 @@ setErrorMessage('');
       );
   
       // Update state
-      const { data: updatedDocs } = await axios.get(`${API_BASE_URL}/cases/${caseId}/documents`);
+      const { data: updatedDocs } = await axios.get(`/cases/${caseId}/documents`);
       // setDocuments(updatedDocs.documents);
   setDocuments((prev) => mergeDocs(updatedDocs.documents, prev));
-      const { data: updatedFolders } = await axios.get(`${API_BASE_URL}/cases/${caseId}/folders`);
+      const { data: updatedFolders } = await axios.get(`/cases/${caseId}/folders`);
       setFolders(updatedFolders.folders);
       
       alert("Document moved successfully!");
@@ -1702,7 +1702,7 @@ const moveSelectedFilesToFolder = async (newFolderPath) => {
   for (const { fileName, folder } of attemptedFiles) {
     try {
       await axios.put(
-        `${API_BASE_URL}/cases/${caseId}/documents/${encodeURIComponent(fileName)}/move`,
+        `/cases/${caseId}/documents/${encodeURIComponent(fileName)}/move`,
         {
           folder: newFolderPath,
           currentFolder: folder || "",
@@ -1720,8 +1720,8 @@ const moveSelectedFilesToFolder = async (newFolderPath) => {
 
   // ✅ Refresh to verify actual result
   const [updatedDocs, updatedFolders] = await Promise.all([
-    axios.get(`${API_BASE_URL}/cases/${caseId}/documents`),
-    axios.get(`${API_BASE_URL}/cases/${caseId}/folders`),
+    axios.get(`/cases/${caseId}/documents`),
+    axios.get(`/cases/${caseId}/folders`),
   ]);
   // setDocuments(updatedDocs.data.documents);
   setDocuments((prev) => mergeDocs(updatedDocs.data.documents, prev));
@@ -2651,7 +2651,7 @@ const timeStr = `${start.format('h:mm A').toLowerCase()} – ${end.format('h:mm 
     const handleRenameFolder = async (newName) => {
       try {
         const response = await axios.put(
-          `${API_BASE_URL}/cases/${caseId}/folders/rename`,
+          `/cases/${caseId}/folders/rename`,
           {
             oldName: renameState.currentName,
             newName,
@@ -2664,7 +2664,7 @@ const timeStr = `${start.format('h:mm A').toLowerCase()} – ${end.format('h:mm 
 
         setRenameState({ open: false, currentName: "" });
         fetchCaseDocuments();
-        const { data } = await axios.get(`${API_BASE_URL}/cases/${caseId}/folders`);
+        const { data } = await axios.get(`/cases/${caseId}/folders`);
         setFolders(data.folders);
       } catch (err) {
         console.error("Error renaming folder:", err);
@@ -2793,7 +2793,7 @@ const timeStr = `${start.format('h:mm A').toLowerCase()} – ${end.format('h:mm 
 
           try {
             await axios.post(
-              `${API_BASE_URL}/cases/${caseId}/folders`,
+              `/cases/${caseId}/folders`,
               { name: fullPath },
               { headers: { "x-user-uid": auth.currentUser.uid } }
             );
@@ -2802,7 +2802,7 @@ const timeStr = `${start.format('h:mm A').toLowerCase()} – ${end.format('h:mm 
             setAddFolderOpen(false);
 
             // Reload folders and documents
-            const { data } = await axios.get(`${API_BASE_URL}/cases/${caseId}/folders`);
+            const { data } = await axios.get(`/cases/${caseId}/folders`);
             setFolders(data.folders);
             fetchCaseDocuments();
           } catch (err) {
@@ -3099,7 +3099,7 @@ const timeStr = `${start.format('h:mm A').toLowerCase()} – ${end.format('h:mm 
             try {
               const urlPath = (doc.folder ? `${encodeURIComponent(doc.folder)}/` : "") + encodeURIComponent(doc.fileName);
               const response = await axios.get(
-                `${API_BASE_URL}/cases/${caseId}/documents/${urlPath}`,
+                `/cases/${caseId}/documents/${urlPath}`,
                 {
                   responseType: "blob",
                   headers: { "x-api-key": REACT_APP_API_TOKEN1 },

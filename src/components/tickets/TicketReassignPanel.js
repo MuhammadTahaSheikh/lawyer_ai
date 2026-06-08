@@ -63,9 +63,9 @@ export default function TicketReassignPanel({
     setError("");
     try {
       const headers = getHeaders?.() || {};
-      const baseUrl = process.env.REACT_APP_BASE_URL || "";
+      
       await axios.put(
-        `${baseUrl}/tickets/${ticket.id}/assign`,
+        `/tickets/${ticket.id}/assign`,
         {
           engineer: buildEngineerPayload(selected),
           groupKey: groupKey || null,

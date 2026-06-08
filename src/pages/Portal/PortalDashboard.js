@@ -5,6 +5,7 @@ import {
   Alert, CircularProgress, Chip,
 } from "@mui/joy";
 import { usePortalAuth } from "../../context/PortalAuthContext";
+import { apiUrl } from "../../config/apiBaseUrl";
 
 function formatBytes(bytes) {
   if (!bytes) return "—";
@@ -41,7 +42,7 @@ export default function PortalDashboard() {
   const fetchDocuments = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/portal/documents`, {
+      const res = await fetch(apiUrl("/portal/documents"), {
         headers: authHeaders(),
       });
       if (res.status === 401) { logoutPortal(); navigate("/portal/login"); return; }
@@ -66,7 +67,7 @@ export default function PortalDashboard() {
     Array.from(files).forEach((f) => formData.append("documents", f));
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_BASE_URL}/portal/documents`, {
+      const res = await fetch(apiUrl("/portal/documents"), {
         method: "POST",
         headers: authHeaders(),
         body: formData,
@@ -86,7 +87,7 @@ export default function PortalDashboard() {
   const handleDownload = async (doc) => {
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_BASE_URL}/portal/documents/${doc.id}/download`,
+        apiUrl(`/portal/documents/${doc.id}/download`),
         { headers: authHeaders() }
       );
       if (!res.ok) throw new Error("Download failed");
@@ -106,7 +107,7 @@ export default function PortalDashboard() {
     if (!window.confirm(`Delete "${doc.original_name}"?`)) return;
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_BASE_URL}/portal/documents/${doc.id}`,
+        apiUrl(`/portal/documents/${doc.id}`),
         { method: "DELETE", headers: authHeaders() }
       );
       if (!res.ok) throw new Error("Delete failed");

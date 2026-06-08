@@ -35,7 +35,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import {auth} from "../../../../firebase/firebase"
 import TaskModal from "../../../../components/taskModal";
 
-const API_URL = `${process.env.REACT_APP_BASE_URL}/tasks`;
+const API_URL = "/tasks";
 
 export default function TaskTab({ case_id_time, cases: propCases }) {
   const [tasks, setTasks] = useState([]);
@@ -128,7 +128,7 @@ const handleCompleteTask = async (taskId) => {
       const selectedUser = users.find(user => user.value === assignedTo);
       const staffId = selectedUser?.staff_id;
       const { data } = await axios.get(
-        `${process.env.REACT_APP_BASE_URL}/tasks/by-case/${case_id_time}`,
+        `/tasks/by-case/${case_id_time}`,
         {
           params: {
             page: params.page || currentPage,

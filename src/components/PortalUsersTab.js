@@ -7,7 +7,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
-const API = process.env.REACT_APP_BASE_URL;
+import { apiUrl } from "../config/apiBaseUrl";
 const headers = () => ({
   "Content-Type": "application/json",
   "x-api-key": process.env.REACT_APP_API_TOKEN,
@@ -28,7 +28,7 @@ export default function PortalUsersTab({ caseId }) {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API}/admin/portal/cases/${caseId}/users`, { headers: headers() });
+      const res = await fetch(apiUrl(`/admin/portal/cases/${caseId}/users`), { headers: headers() });
       const data = await res.json();
       setUsers(data.users || []);
     } catch {
@@ -45,7 +45,7 @@ export default function PortalUsersTab({ caseId }) {
     setCreating(true);
     setError("");
     try {
-      const res = await fetch(`${API}/admin/portal/cases/${caseId}/users`, {
+      const res = await fetch(apiUrl(`/admin/portal/cases/${caseId}/users`), {
         method: "POST",
         headers: headers(),
         body: JSON.stringify(form),
@@ -65,7 +65,7 @@ export default function PortalUsersTab({ caseId }) {
   const handleRemove = async (user) => {
     if (!window.confirm(`Remove portal access for ${user.email}?`)) return;
     try {
-      const res = await fetch(`${API}/admin/portal/users/${user.id}`, {
+      const res = await fetch(apiUrl(`/admin/portal/users/${user.id}`), {
         method: "DELETE",
         headers: headers(),
       });

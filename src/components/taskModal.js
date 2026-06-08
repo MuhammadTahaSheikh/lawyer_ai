@@ -18,7 +18,7 @@ import {
 import axios from "axios";
 import { debounce } from "lodash";
 import { auth } from "../firebase/firebase";
-const API_URL = `${process.env.REACT_APP_BASE_URL}/tasks`;
+const API_URL = "/tasks";
 
 export default function TaskModal({
   date,
