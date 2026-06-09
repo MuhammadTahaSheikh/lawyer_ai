@@ -9,150 +9,8 @@ import loadingAnimation from '../animations/loading-screen.json';
 import gear from '../animations/gears.json';
 import done from '../animations/done.json';
 import { auth } from '../firebase/firebase';
+import { openDocumentViewer } from '../utils/openDocumentViewer';
 
-async function openOnlyOfficeEditor(opts) {
-  const {
-    API_BASE_URL = '',
-    DOCUMENT_SERVER_ORIGIN = 'https://docs.louislawgroup.com',
-    caseId,
-    doc,
-    firebaseUid = null,
-    canWrite = true,
-  } = opts || {};
-
-  if (!caseId || !doc?.fileName) {
-    throw new Error('Missing caseId or document');
-  }
-
-  const targetName = 'ONLYOFFICE_EDITOR';
-  const editorWin = window.open('', targetName);
-  if (!editorWin) {
-    throw new Error('Popup blocked. Please allow popups for this site.');
-  }
-
-  try {
-    editorWin.document.title = 'ONLYOFFICE Editor';
-    editorWin.document.body.innerHTML = '<p style="font-family:system-ui;margin:24px;">Loading editor…</p>';
-  } catch {}
-
-  function getCookie(name) {
-    try {
-      const cookies = document.cookie ? document.cookie.split('; ') : [];
-      for (let i = 0; i < cookies.length; i++) {
-        const parts = cookies[i].split('=');
-        const key = decodeURIComponent(parts[0] || '');
-        if (key === name) {
-          const val = parts.slice(1).join('=');
-          try { return decodeURIComponent(val || ''); } catch { return val || ''; }
-        }
-      }
-      return '';
-    } catch {
-      return '';
-    }
-  }
-
-  const fromAxios =
-    (axios?.defaults?.headers?.common && (axios.defaults.headers.common['x-api-key'] || axios.defaults.headers.common['X-API-KEY'])) ||
-    (axios?.defaults?.headers && (axios.defaults.headers['x-api-key'] || axios.defaults.headers['X-API-KEY'])) ||
-    '';
-
-  const fromWindow =
-    (typeof window !== 'undefined' && (
-      window.API_KEY ||
-      window.X_API_KEY ||
-      (window.__CONFIG && (window.__CONFIG.API_KEY || window.__CONFIG.X_API_KEY))
-    )) || '';
-
-  const fromMeta = (() => {
-    try {
-      const m = document.querySelector('meta[name="x-api-key"]');
-      return (m && m.getAttribute('content')) || '';
-    } catch { return ''; }
-  })();
-
-  const API_KEY = (
-    fromAxios ||
-    process.env.REACT_APP_INTERNAL_API_KEY ||
-    localStorage.getItem('X_API_KEY') ||
-    localStorage.getItem('API_KEY') ||
-    sessionStorage.getItem('X_API_KEY') ||
-    sessionStorage.getItem('API_KEY') ||
-    getCookie('X_API_KEY') ||
-    getCookie('API_KEY') ||
-    getCookie('x-api-key') ||
-    fromMeta ||
-    fromWindow
-  ) || '';
-
-  const base = API_BASE_URL || process.env.REACT_APP_BASE_URL || process.env.REACT_APP_PUBLIC_API_BASE_URL || window.location.origin;
-  const folder = (doc.folder || '').replace(/^\//, '');
-  const relPath = folder ? `${caseId}/${folder}/${doc.fileName}` : `${caseId}/${doc.fileName}`;
-
-  const tokenResp = await axios.post(
-    `${base.replace(/\/+$/, '')}/wopi/token`,
-    { relPath, userId: firebaseUid || 'unknown', write: !!canWrite },
-    {
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(API_KEY ? { 'x-api-key': API_KEY, Authorization: `Bearer ${API_KEY}` } : {}),
-        'x-user-uid': firebaseUid || '',
-      },
-      timeout: 15000,
-    }
-  );
-
-  const { access_token, access_token_ttl, wopi_src } = tokenResp.data || {};
-  if (!access_token || !wopi_src) {
-    throw new Error('Token response missing access_token or wopi_src');
-  }
-
-  const discResp = await axios.get(`${base.replace(/\/+$/, '')}/wopi/discovery`, {
-    withCredentials: true,
-    headers: {
-      ...(API_KEY ? { 'x-api-key': API_KEY, Authorization: `Bearer ${API_KEY}` } : {}),
-    },
-    responseType: 'text',
-    timeout: 15000,
-  });
-
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(discResp.data, 'application/xml');
-  if (xml.getElementsByTagName('parsererror').length) {
-    throw new Error('Failed to parse discovery XML');
-  }
-  const actions = Array.from(xml.getElementsByTagName('action'));
-  const edit = actions.find((a) => a.getAttribute('ext') === 'docx' && a.getAttribute('name') === 'edit');
-  if (!edit) {
-    throw new Error('No edit action for .docx in discovery');
-  }
-
-  const actionUrl = new URL(edit.getAttribute('urlsrc'), DOCUMENT_SERVER_ORIGIN);
-  actionUrl.searchParams.set('WOPISrc', wopi_src);
-
-  const form = document.createElement('form');
-  form.method = 'POST';
-  form.action = actionUrl.toString();
-  form.target = targetName;
-
-  const inputToken = document.createElement('input');
-  inputToken.type = 'hidden';
-  inputToken.name = 'access_token';
-  inputToken.value = access_token;
-
-  const inputTtl = document.createElement('input');
-  inputTtl.type = 'hidden';
-  inputTtl.name = 'access_token_ttl';
-  inputTtl.value = String(access_token_ttl || '');
-
-  form.appendChild(inputToken);
-  form.appendChild(inputTtl);
-  document.body.appendChild(form);
-  form.submit();
-  try { editorWin.focus(); } catch {}
-  setTimeout(() => { try { form.remove(); } catch {} }, 2000);
-}
 
 const API_BASE_URL = process.env.REACT_APP_BASE_URL || process.env.REACT_APP_PUBLIC_API_BASE_URL || process.env.REACT_APP_API_BASE_URL || '';
 
@@ -546,16 +404,9 @@ const SettlementConfirmationComponent = ({ caseId, nameByUid }) => {
                           e.preventDefault();
                           e.stopPropagation();
                           try {
-                            await openOnlyOfficeEditor({
-                              API_BASE_URL: API_BASE_URL || 'https://external-applications.louislawgroup.com',
-                              DOCUMENT_SERVER_ORIGIN: 'https://docs.louislawgroup.com',
-                              caseId,
-                              doc: d,
-                              firebaseUid: auth?.currentUser?.uid,
-                              canWrite: true,
-                            });
+                            await openDocumentViewer({ caseId, doc: d });
                           } catch (err) {
-                            alert(`Could not open in ONLYOFFICE: ${err.message}`);
+                            alert(`Could not open document: ${err.message}`);
                           }
                         }}
                       >

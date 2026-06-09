@@ -5,7 +5,8 @@ import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import DriveFileMoveIcon from '@mui/icons-material/DriveFileMove';
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { API_BASE_URL, apiUrl } from "../config/apiBaseUrl";
+import { API_BASE_URL } from "../config/apiBaseUrl";
+import { openDocumentViewer } from "../utils/openDocumentViewer";
 import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -77,283 +78,6 @@ import EventModal from "../components/EventModal";
 import PortalUsersTab from "../components/PortalUsersTab";
 
 
-// ---- ONLYOFFICE WOPI opener ----
-async function openOnlyOfficeEditor({ 
-  API_BASE_URL, 
-  DOCUMENT_SERVER_ORIGIN, 
-  caseId, 
-  doc, 
-  firebaseUid, 
-  canWrite = true 
-}) {
-  let relPath;
-  const base = `${caseId}`;
-  if (doc.folder) {
-    relPath = `${base}/${doc.folder}/${doc.fileName}`;
-  } else {
-    relPath = `${base}/${doc.fileName}`;
-  }
-
-  const REACT_APP_API_TOKEN1 = process.env.REACT_APP_API_TOKEN || "LSzuRrbln9oyKUz05E9bgQe1tBNtZLft";
-  
-  const tokenResp = await fetch(apiUrl("/wopi/token"), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': REACT_APP_API_TOKEN1,
-    },
-    body: JSON.stringify({
-      relPath,
-      userId: firebaseUid,
-      write: !!canWrite,
-    })
-  });
-
-  if (!tokenResp.ok) {
-    let message = '';
-    try {
-      const ct = tokenResp.headers.get('content-type') || '';
-      if (ct.includes('application/json')) {
-        const err = await tokenResp.json();
-        message = err.error || JSON.stringify(err);
-      } else {
-        message = await tokenResp.text();
-      }
-    } catch (_) {}
-    alert('Could not open document: ' + (message || 'Unknown error'));
-    throw new Error(`Token error: ${tokenResp.status}${message ? ` — ${message}` : ''}`);
-  }
-
-  const tokenData = await tokenResp.json();
-  const { access_token, access_token_ttl, wopi_src } = tokenData;
-
-  const discResp = await fetch(apiUrl("/wopi/discovery"), {
-    headers: {
-      'x-api-key': REACT_APP_API_TOKEN1,
-    },
-  });
-
-  if (!discResp.ok) {
-    alert('Could not open document: Discovery fetch failed: ' + discResp.status);
-    throw new Error(`Discovery fetch failed: ${discResp.status}`);
-  }
-
-  const xmlText = await discResp.text();
-  const parser = new DOMParser();
-  const xml = parser.parseFromString(xmlText, 'application/xml');
-  
-  if (xml.getElementsByTagName('parsererror').length) {
-    alert('Could not open document: Failed to parse discovery XML');
-    throw new Error('Failed to parse discovery XML');
-  }
-
-  const actions = Array.from(xml.getElementsByTagName('action'));
-  const edit = actions.find(a => 
-    a.getAttribute('ext') === 'docx' && 
-    a.getAttribute('name') === 'edit'
-  );
-
-  if (!edit) {
-    alert('Could not open document: No edit action for .docx in discovery');
-    throw new Error('No edit action for .docx in discovery');
-  }
-
-  const actionUrl = new URL(
-    edit.getAttribute('urlsrc'), 
-    DOCUMENT_SERVER_ORIGIN
-  );
-  actionUrl.searchParams.set('WOPISrc', wopi_src);
-
-  const sanitizedFileName = doc.fileName.replace(/[^a-zA-Z0-9]/g, '_');
-  const targetName = `ONLYOFFICE_${sanitizedFileName}`;
-  
-  // Open window and inject heartbeat script
-  const editorWindow = window.open('', targetName);
-  
-  if (editorWindow) {
-    // Inject a heartbeat script that runs INSIDE the OnlyOffice window
-    editorWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Loading...</title>
-        <script>
-          console.log('🔄 OnlyOffice Heartbeat Injected');
-          
-          // Wait for page to fully load, then start heartbeat
-          window.addEventListener('load', function() {
-            console.log('📄 OnlyOffice page loaded, starting heartbeat in 10 seconds...');
-            
-            setTimeout(function() {
-              setInterval(function() {
-                console.log('💓 OnlyOffice heartbeat: triggering activity...');
-                
-                try {
-                  // Method 1: Trigger visibility change
-                  var event = new Event('visibilitychange');
-                  document.dispatchEvent(event);
-                  
-                  // Method 2: Trigger focus
-                  window.focus();
-                  
-                  // Method 3: Trigger mouse movement
-                  var mouseEvent = new MouseEvent('mousemove', {
-                    bubbles: true,
-                    cancelable: true,
-                    view: window
-                  });
-                  document.dispatchEvent(mouseEvent);
-                  
-                  console.log('✅ Heartbeat completed');
-                } catch (e) {
-                  console.error('❌ Heartbeat error:', e);
-                }
-              }, 45000); // Every 45 seconds
-            }, 10000); // Start after 10 seconds
-          });
-        </script>
-      </head>
-      <body>
-        <h2>Loading document...</h2>
-        <p>Please wait while the editor initializes.</p>
-      </body>
-      </html>
-    `);
-    editorWindow.document.close();
-    
-    editorWindow.focus();
-  }
-
-  // Submit form after a brief delay to let the script inject
-  setTimeout(() => {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = actionUrl.toString();
-    form.target = targetName;
-
-    const inputToken = document.createElement('input');
-    inputToken.type = 'hidden';
-    inputToken.name = 'access_token';
-    inputToken.value = access_token;
-
-    const inputTtl = document.createElement('input');
-    inputTtl.type = 'hidden';
-    inputTtl.name = 'access_token_ttl';
-    inputTtl.value = String(access_token_ttl);
-
-    form.appendChild(inputToken);
-    form.appendChild(inputTtl);
-    document.body.appendChild(form);
-    
-    console.log('📤 Submitting form to OnlyOffice...');
-    form.submit();
-
-    setTimeout(() => { 
-      try { 
-        form.remove(); 
-      } catch (_) {} 
-    }, 2000);
-  }, 500);
-}
-
-// ============ ADD THIS HEARTBEAT HOOK HERE ============
-// window.open('', name) reuses a named window; if none exists it opens about:blank — a blank tab.
-// After the user closes OnlyOffice, the heartbeat would otherwise open a new blank tab every 50s.
-const useOnlyOfficeHeartbeat = (documentFileName) => {
-  const heartbeatInterval = useRef(null);
-  
-  useEffect(() => {
-    if (!documentFileName) return;
-    
-    const sanitizedFileName = documentFileName.replace(/[^a-zA-Z0-9]/g, '_');
-    const targetName = `ONLYOFFICE_${sanitizedFileName}`;
-    
-    console.log('Starting OnlyOffice heartbeat for:', targetName);
-    
-    const clearHeartbeatInterval = () => {
-      if (heartbeatInterval.current) {
-        clearInterval(heartbeatInterval.current);
-        heartbeatInterval.current = null;
-      }
-    };
-    
-    heartbeatInterval.current = setInterval(() => {
-      try {
-        const editorWindow = window.open('', targetName);
-        
-        if (!editorWindow || editorWindow.closed) {
-          console.log('Editor window closed, stopping heartbeat');
-          clearHeartbeatInterval();
-          return;
-        }
-
-        // New named window with no existing editor = blank tab; close it and stop (same interval stop as above).
-        let isBlankOrNew = false;
-        try {
-          const href = editorWindow.location.href;
-          if (href === 'about:blank' || href === '') {
-            isBlankOrNew = true;
-          }
-        } catch {
-          // Cross-origin — real OnlyOffice editor; unchanged behavior
-        }
-        if (isBlankOrNew && !editorWindow.DocsAPI) {
-          try {
-            editorWindow.close();
-          } catch (_) {}
-          console.log('OnlyOffice window was closed; stopping heartbeat (avoid blank tabs)');
-          clearHeartbeatInterval();
-          return;
-        }
-        
-        console.log('OnlyOffice heartbeat: simulating reconnect...');
-        
-        if (editorWindow.DocsAPI && editorWindow.DocsAPI.DocEditor) {
-          try {
-            const editor = editorWindow.DocsAPI.DocEditor.instances?.[0];
-            if (editor) {
-              editor.processSaveResult?.(true);
-            }
-          } catch (e) {
-            console.log('Method 1 failed:', e.message);
-          }
-          
-          try {
-            if (editorWindow.io && editorWindow.io.sockets) {
-              const socket = Object.values(editorWindow.io.sockets)?.[0];
-              if (socket) {
-                socket.emit('message', { type: 'ping' });
-              }
-            }
-          } catch (e) {
-            console.log('Method 2 failed:', e.message);
-          }
-          
-          try {
-            const visibilityEvent = new Event('visibilitychange');
-            editorWindow.document.dispatchEvent(visibilityEvent);
-            editorWindow.focus();
-          } catch (e) {
-            console.log('Method 3 failed:', e.message);
-          }
-          
-          console.log('OnlyOffice heartbeat completed');
-        }
-      } catch (error) {
-        console.error('Heartbeat error:', error);
-      }
-    }, 50000);
-    
-    return () => {
-      if (heartbeatInterval.current) {
-        console.log('Stopping OnlyOffice heartbeat');
-        clearInterval(heartbeatInterval.current);
-        heartbeatInterval.current = null;
-      }
-    };
-  }, [documentFileName]);
-};
-// ============ END OF HEARTBEAT HOOK ============
 const REACT_APP_API_TOKEN1 = process.env.REACT_APP_API_TOKEN || "LSzuRrbln9oyKUz05E9bgQe1tBNtZLft";
 // Keep existing metadata (uploaderName/uploaderUid/uploadedAt) if server returns strings
 const mergeDocs = (incomingDocs, prevDocs) => {
@@ -584,10 +308,8 @@ const toggleFolder = (folder) => {
   const [eSignSubTab, setESignSubTab] = useState(0);
   // Documents associated with the case and document search term for filteri
   const [documents, setDocuments] = useState([]);
-  const [currentOpenDocument, setCurrentOpenDocument] = useState(null);
   const [docSearchTerm, setDocSearchTerm] = useState("");
   const caseId = id;
-  useOnlyOfficeHeartbeat(currentOpenDocument);
   const [openModal, setOpenModal] = useState(false);
   const [eventsa, setEvents] = useState([]);
   const [caseStage, setCaseStage] = useState(caseDetails?.case_stage || "");
@@ -1420,18 +1142,10 @@ const renderFolders = (folderList, level = 0) => {
         e.preventDefault();
         e.stopPropagation();
         try {
-          await openOnlyOfficeEditor({
-            API_BASE_URL,
-            DOCUMENT_SERVER_ORIGIN: "https://docs.louislawgroup.com",
-            caseId,
-            doc,
-            firebaseUid: auth?.currentUser?.uid,
-            canWrite: true
-          });
-          setCurrentOpenDocument(doc.fileName);
+          await openDocumentViewer({ caseId, doc });
         } catch (err) {
-          console.error('ONLYOFFICE open error:', err);
-          alert(`Could not open in ONLYOFFICE: ${err.message}`);
+          console.error('Document open error:', err);
+          alert(`Could not open document: ${err.message}`);
         }
       }}
       style={{
@@ -1457,24 +1171,16 @@ const renderFolders = (folderList, level = 0) => {
         />
       </td>
 
-      {/* Filename cell — opens ONLYOFFICE, not download */}
+      {/* Filename cell — opens document viewer */}
       <td
         onClick={async (e) => {
           e.preventDefault();
           e.stopPropagation();
           try {
-            await openOnlyOfficeEditor({
-              API_BASE_URL,
-              DOCUMENT_SERVER_ORIGIN: "https://docs.louislawgroup.com",
-              caseId,
-              doc,
-              firebaseUid: auth?.currentUser?.uid,
-              canWrite: true
-            });
-            setCurrentOpenDocument(doc.fileName);
+            await openDocumentViewer({ caseId, doc });
           } catch (err) {
-            console.error('ONLYOFFICE open error:', err);
-            alert(`Could not open in ONLYOFFICE: ${err.message}`);
+            console.error('Document open error:', err);
+            alert(`Could not open document: ${err.message}`);
           }
         }}
         style={{
@@ -1547,7 +1253,7 @@ const renderFolders = (folderList, level = 0) => {
           <DownloadIcon />
         </Button>
 
-        {/* Preview in ONLYOFFICE */}
+        {/* Preview document */}
         <Button
           variant="plain"
           size="sm"
@@ -1555,18 +1261,10 @@ const renderFolders = (folderList, level = 0) => {
             e.preventDefault();
             e.stopPropagation();
             try {
-              await openOnlyOfficeEditor({
-                API_BASE_URL,
-                DOCUMENT_SERVER_ORIGIN: "https://docs.louislawgroup.com",
-                caseId,
-                doc,
-                firebaseUid: auth?.currentUser?.uid,
-                canWrite: true
-              });
-              setCurrentOpenDocument(doc.fileName);
+              await openDocumentViewer({ caseId, doc });
             } catch (err) {
-              console.error('ONLYOFFICE open error:', err);
-              alert(`Could not open in ONLYOFFICE: ${err.message}`);
+              console.error('Document open error:', err);
+              alert(`Could not open document: ${err.message}`);
             }
           }}
         >
@@ -2998,18 +2696,10 @@ const timeStr = `${start.format('h:mm A').toLowerCase()} – ${end.format('h:mm 
         e.preventDefault();
         e.stopPropagation();
         try {
-          await openOnlyOfficeEditor({
-            API_BASE_URL,
-            DOCUMENT_SERVER_ORIGIN: "https://docs.louislawgroup.com",
-            caseId,
-            doc: { ...doc, folder: "" },
-            firebaseUid: auth?.currentUser?.uid,
-            canWrite: true
-          });
-          setCurrentOpenDocument(doc.fileName);
+          await openDocumentViewer({ caseId, doc: { ...doc, folder: "" } });
         } catch (err) {
-          console.error('ONLYOFFICE open error:', err);
-          alert(`Could not open in ONLYOFFICE: ${err.message}`);
+          console.error('Document open error:', err);
+          alert(`Could not open document: ${err.message}`);
         }
       }}
       style={{
@@ -3035,24 +2725,16 @@ const timeStr = `${start.format('h:mm A').toLowerCase()} – ${end.format('h:mm 
         />
       </td>
 
-      {/* Filename cell — opens ONLYOFFICE, not download */}
+      {/* Filename cell — opens document viewer */}
       <td
         onClick={async (e) => {
           e.preventDefault();
           e.stopPropagation();
           try {
-            await openOnlyOfficeEditor({
-              API_BASE_URL,
-              DOCUMENT_SERVER_ORIGIN: "https://docs.louislawgroup.com",
-              caseId,
-              doc: { ...doc, folder: "" },
-              firebaseUid: auth?.currentUser?.uid,
-              canWrite: true
-            });
-            setCurrentOpenDocument(doc.fileName);
+            await openDocumentViewer({ caseId, doc: { ...doc, folder: "" } });
           } catch (err) {
-            console.error('ONLYOFFICE open error:', err);
-            alert(`Could not open in ONLYOFFICE: ${err.message}`);
+            console.error('Document open error:', err);
+            alert(`Could not open document: ${err.message}`);
           }
         }}
         style={{
@@ -3122,7 +2804,7 @@ const timeStr = `${start.format('h:mm A').toLowerCase()} – ${end.format('h:mm 
           <DownloadIcon />
         </Button>
 
-        {/* Preview in ONLYOFFICE */}
+        {/* Preview document */}
         <Button
           variant="plain"
           size="sm"
@@ -3130,18 +2812,10 @@ const timeStr = `${start.format('h:mm A').toLowerCase()} – ${end.format('h:mm 
             e.preventDefault();
             e.stopPropagation();
             try {
-              await openOnlyOfficeEditor({
-                API_BASE_URL,
-                DOCUMENT_SERVER_ORIGIN: "https://docs.louislawgroup.com",
-                caseId,
-                doc: { ...doc, folder: "" },
-                firebaseUid: auth?.currentUser?.uid,
-                canWrite: true
-              });
-              setCurrentOpenDocument(doc.fileName);
+              await openDocumentViewer({ caseId, doc: { ...doc, folder: "" } });
             } catch (err) {
-              console.error('ONLYOFFICE open error:', err);
-              alert(`Could not open in ONLYOFFICE: ${err.message}`);
+              console.error('Document open error:', err);
+              alert(`Could not open document: ${err.message}`);
             }
           }}
         >
